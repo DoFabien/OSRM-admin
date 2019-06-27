@@ -1,0 +1,11 @@
+<mat-form-field >
+  <input matInput placeholder="Login" [(ngModel)]="login">
+</mat-form-field>
+
+<mat-form-field>
+  <input matInput type="password" placeholder="Password" [(ngModel)]="password">
+</mat-form-field>
+
+<p *ngIf="errorMessage" > {{errorMessage}}</p>
+
+<button mat-button (click)="signIn(login, password)">Se connecter</button>

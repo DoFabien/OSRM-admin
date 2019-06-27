@@ -1,0 +1,32 @@
+<p>
+  l'identifiant de la zone ne doit pas comporter d'espace ou de caractères spéciaux
+</p>
+
+<mat-form-field>
+  <input matInput placeholder="Identifiant de la zone" [(ngModel)]="newAreaName">
+</mat-form-field>
+
+<p> {{ store.newAreaBbox }}</p>
+
+
+<button mat-raised-button color="primary" [disabled]="store.newAreaBbox.length !== 4 || newAreaName.trim().length === 0"
+  (click)="dlOsmDataFromCurrentBbox(newAreaName)">
+  Add
+</button>
+
+
+<button mat-raised-button color="primary" (click)="cancel()">
+  cancel
+</button>
+
+
+<div *ngIf= "store.user.level > 3">
+    <mat-form-field>
+        <input matInput placeholder="url du pbf" [(ngModel)]="pbfUrl">
+      </mat-form-field>
+
+      <button mat-raised-button color="primary" [disabled]="pbfUrl.length < 5"
+        (click)="dlOsmDataFromPbfUrl(newAreaName, pbfUrl)">
+        Ajouter from PBF
+      </button>
+</div>

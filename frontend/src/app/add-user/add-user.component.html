@@ -1,0 +1,16 @@
+<mat-form-field>
+    <input matInput type="text" placeholder="login" [(ngModel)]="login">
+  </mat-form-field>
+
+  <mat-form-field>
+    <input matInput type="number" placeholder="Level" [(ngModel)]="level">
+  </mat-form-field>
+
+  <mat-form-field>
+    <input matInput type="text" placeholder="password" [(ngModel)]="password">
+  </mat-form-field>
+
+
+  <p *ngIf="errorMessage"> {{errorMessage}}</p>
+
+  <button mat-button (click)="addUser(login, level, password)">Valider</button>

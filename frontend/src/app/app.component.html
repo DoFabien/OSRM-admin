@@ -1,0 +1,174 @@
+<mat-toolbar color="primary">
+    <mat-progress-bar style="position: absolute;" mode="indeterminate" *ngIf="store.processing.isProcessing" color="warn"></mat-progress-bar>
+    <mat-toolbar-row>
+        <button mat-icon-button [matMenuTriggerFor]="menu">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+      <span class="example-spacer"></span>
+      <mat-icon class="example-icon"
+      matTooltip="Ouvrir dans openstreetmap"
+      (click)="openOpenstreetmap()" >open_in_browser</mat-icon>
+      <!-- <mat-icon *ngIf="store.processing.isProcessing" class="example-icon" >sync</mat-icon> -->
+    </mat-toolbar-row>
+  </mat-toolbar>
+
+
+  <mat-menu #menu="matMenu">
+      <button mat-menu-item *ngIf="store.user.id === null" (click)="openLoginDialog()">
+          <mat-icon>account_circle</mat-icon>
+          <span>Login</span>
+        </button>
+
+      <button mat-menu-item *ngIf="store.user.level > 1" (click)="changeMode('addArea')">
+        <mat-icon>add</mat-icon>
+        <span>Ajouter une région</span>
+      </button>
+
+
+      <button mat-menu-item *ngIf="store.user.id !== null" (click)="openChangePasswordDialog()">
+          <mat-icon>vpn_key</mat-icon>
+          <span>Changer le password</span>
+      </button>
+
+      <button mat-menu-item *ngIf="store.user.level > 3" (click)="openAddUserDialog()">
+          <mat-icon>account_circle</mat-icon>
+          <span>Ajouter un utilisateur</span>
+      </button>
+
+      <button mat-menu-item *ngIf="store.user.id !== null" (click)="logout()">
+          <mat-icon>power_settings_new</mat-icon>
+          <span>Logout</span>
+      </button>
+
+
+
+    </mat-menu>
+
+
+
+<div class="map" leaflet [leafletOptions]="mapService.mapOption" (leafletMapReady)="onMapReady($event)">
+</div>
+
+<div class="side">
+  <app-add-area *ngIf="store.mode ==='addArea'">
+
+  </app-add-area>
+
+
+  <app-routing *ngIf="store.mode ==='routing'">
+
+  </app-routing>
+
+
+  <div class="detailData" *ngIf="store.mode ==='consult'">
+    <div *ngFor="let m of store.meta">
+      <mat-card>
+          <mat-progress-bar *ngIf="store.isDl.isDl && store.isDl.areaName === m.id  || (store.processing.isProcessing && store.processing.areaName === m.id)"
+            mode="indeterminate"></mat-progress-bar>
+
+        <h3 style='display:inline'>{{m.id}} </h3>
+        ({{ m.meta.date | date: 'dd/MM/yyyy HH:mm' }}) ({{m.meta?.size | sizeFile}})
+
+        <button mat-mini-fab class="Fabbutton" color="primary" (click)="zoomIn(m)"
+          matTooltip="Zoomer sur l'emprise"
+          [disabled]="m.meta.type === 'geofabrik'" >
+          <mat-icon>zoom_in</mat-icon>
+        </button>
+
+        <button mat-mini-fab class="Fabbutton" color="primary"
+        [disabled]="(store.isDl.isDl && store.isDl.areaName === m.id) || (store.processing.isProcessing && store.processing.areaName  == m.id)"
+        (click)="updateData(m.id)"
+        matTooltip="Mettre à jour les données"
+          *ngIf="store.user.id == m.meta.user || store.user.level > 2">
+          <mat-icon>sync</mat-icon>
+        </button>
+
+        <button mat-mini-fab class="Fabbutton" color="warn" (click)="deleteData(m.id)"
+          [disabled]="(store.isDl.isDl && store.isDl.areaName === m.id) || (store.processing.isProcessing && store.processing.areaName == m.id)"
+          matTooltip="Supprimer les données et les profils associés"
+          *ngIf="store.user.id == m.meta.user || store.user.level > 2">
+          <mat-icon>delete_forever</mat-icon>
+        </button>
+
+
+
+        <div>
+          <table style="width:100%">
+            <tr>
+              <th>Profil</th>
+              <th>Last data</th>
+              <th>Actions</th>
+            </tr>
+            <tr *ngFor="let profil of m.profils | keys">
+              <td> {{profil.key }}</td>
+              <td>
+                <mat-icon *ngIf="profil.value.data_date === m.meta.date">check</mat-icon>
+                <mat-icon *ngIf="profil.value.data_date !== m.meta.date"
+                matTooltip="Les données utilisées par ce profil ne sont pas à jour"
+                >warning</mat-icon>
+
+                <!-- {{profil.value.data_date | date: 'dd/MM/yyyy HH:mm' }} -->
+              </td>
+              <td>
+                  <mat-spinner
+                  *ngIf="store.processing.isProcessing && store.processing.areaName === m.id && store.processing.profil === profil.key"
+                  diameter='40'
+                  matTooltip="Le profil est en train d'être calculé"
+
+                  ></mat-spinner>
+
+                <div style="display: inline"
+                *ngIf="!store.processing.isProcessing || store.processing.areaName !== m.id || store.processing.profil !== profil.key" >
+                    <button mat-mini-fab class="Fabbutton" color="primary" (click)="testRoutingMode(m.id, profil.key)"
+                    matTooltip="Tester ce profil !" >
+                        <mat-icon>navigation</mat-icon>
+                      </button>
+
+                    <button mat-mini-fab class="Fabbutton" color="primary" (click)="prepareData(m.id, profil.key)"
+                      *ngIf="(store.user.id == m.meta.user || store.user.level > 2) && profil.value.data_date !== m.meta.date"
+                      [disabled]="store.processing.isProcessing ||  (store.isDl.isDl && store.isDl.areaName === m.id)"
+                      matTooltip="Mettre à jour le profil avec les dernières données"
+                      >
+                    <mat-icon>sync</mat-icon>
+                  </button>
+
+                  <button mat-mini-fab class="Fabbutton" color="warn" (click)="deleteProfil(m.id, profil.key)"
+                    *ngIf="store.user.id == m.meta.user || store.user.level > 2"
+                    [disabled]="store.processing.isProcessing ||  (store.isDl.isDl && store.isDl.areaName === m.id)"
+                    matTooltip="Supprimer ce profil"
+                    >
+                    <mat-icon>delete_forever</mat-icon>
+                  </button>
+                </div>
+
+              </td>
+            </tr>
+
+          </table>
+        </div>
+
+
+
+        <div class="addProfil" *ngIf="store.user.id == m.meta.user || store.user.level > 2">
+          <mat-select placeholder="Profil" [(value)]="m.profilSelected" style="    width: 100px;">
+            <mat-option *ngFor="let profil of store.PROFILES | filterProfils: m.profils" [value]="profil">
+              {{profil}}
+            </mat-option>
+          </mat-select>
+
+          <button mat-raised-button color="primary"
+          [disabled]="store.processing.isProcessing || !m.profilSelected"
+          (click)="prepareData(m.id, m.profilSelected)" matTooltip="Ajouter ce profil">
+            Add Profil
+          </button>
+
+        </div>
+
+      </mat-card>
+    </div>
+  </div>
+
+
+</div>
+
+<!-- <router-outlet></router-outlet> -->

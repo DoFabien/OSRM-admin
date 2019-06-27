@@ -1,0 +1,18 @@
+
+ <button mat-button (click)="cancel()">Retour</button>
+
+<mat-card style="margin: 10px;">
+    <h3> Id de la zone : {{ this.store.routing.areaName }} </h3>
+    <h4> Profil : {{ this.store.routing.profil }} </h4>
+
+
+    <!-- {{ store.routing.result |json}} -->
+    <div *ngIf="this.store.routing.result ">
+      <p>Distance : {{this.store.routing.result.distance}} m</p>
+      <p>Durée : {{this.store.routing.result.duration}} sec</p>
+
+        <!-- {{this.store.routing.result.legs[0].annotation.nodes.length}} -->
+    </div>
+
+</mat-card>
+

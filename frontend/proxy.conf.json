@@ -1,0 +1,22 @@
+{
+  "/api": {
+    "target": "http://localhost:3000",
+    "secure": false,
+    "ws": true,
+    "pathRewrite": {
+      "^/api": ""
+    }
+  },
+  "/Osrm-admin/api": {
+    "target": "http://localhost:3000",
+    "secure": false,
+    "ws": true,
+    "pathRewrite": {
+      "^/Osrm-admin/api": ""
+    }
+  }
+
+
+}
+
+
