@@ -19,7 +19,7 @@
     "fs-extra": "^7.0.1",
     "http": "0.0.0",
     "i": "^0.3.6",
-    "jsonwebtoken": "^8.5.0",
+    "jsonwebtoken": "^9.0.0",
     "node-wget-promise": "^0.1.6",
     "npm": "^6.8.0",
     "osrm": "^5.22.0",
